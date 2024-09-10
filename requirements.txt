@@ -22,5 +22,3 @@ typing_extensions==4.12.2
 vboxapi==1.0
 virtualenv==20.26.3
 Werkzeug==3.0.4
-psycopg2-binary
-
