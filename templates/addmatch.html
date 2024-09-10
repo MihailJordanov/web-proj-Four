@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <link rel="icon" href="/static/icons/ic1.png" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Match</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('path/to/your/background-image.jpg') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+        }
+        .background {
+            background-image: url('/static/images/bg14.jpg'); /* Път към вашето изображение */
+            background-size: cover; /* Покрива целия контейнер */
+            background-position: center; /* Центрира изображението */
+            background-repeat: no-repeat; /* Не повтаря изображението */
+            min-height: 100vh; /* Минимална височина на контейнера */
+            padding: 20px; /* Добавете вътрешни отстояния, ако е необходимо */
+
+            background-size: cover;
+            z-index: -1; /* Поставя фона зад съдържанието */
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.859); /* Полупрозрачен фон */
+            border-radius: 10px;
+        }       
+        .match-info {
+            padding: 20px;
+        }
+        .match-info label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .match-info input[type="number"],
+        .match-info input[type="datetime-local"],
+        .match-info select {
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            width: 60%; /* Основна ширина на полетата */
+        }
+        .match-info input[type="number"].short,
+        .match-info input[type="datetime-local"].short,
+        .match-info select.short {
+            width: 59%; /* Намалена ширина на полетата, ако е необходимо */
+        }
+        .match-info button {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 300px; /* Ширина на бутона */
+        }
+        .match-info button:hover {
+            background-color: #0056b3;
+        }
+        .user-stats {
+            display: flex;
+            flex-wrap: wrap; /* Позволява на елементите да преминават на следващ ред, ако не се поберат в един ред */
+            gap: 15px; /* Разстояние между секциите за играчи */
+        }
+
+        .user-section {
+            display: flex;
+            flex-direction: column; /* Подрежда полетата на вертикален ред в рамките на секцията */
+            width: 300px; /* Ширина на секцията за всеки играч */
+        }
+        .user-section label {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        .user-section input[type="number"] {
+            width: 50%; /* Ширина на полетата за статистики */
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        .back-button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            border-radius: 4px;
+            cursor: pointer;
+            position: fixed; /* Фиксира бутона на място */
+            right: 20px; /* Отстояние от десния ръб */
+            bottom: 20px; /* Отстояние от долния ръб */
+            transition: all 0.3s ease; /* Анимация за плавно смаляване */
+        }
+        .back-button:hover {
+            background-color: #218838;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center; /* Центриране по хоризонтал */
+            align-items: center; /* Центриране по вертикал (ако контейнерът има височина) */
+            margin-top: 20px; /* Отстояние отгоре за по-добър вид */
+        }
+        .styled-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .styled-button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+        .styled-button:active {
+            background-color: #3e8e41;
+            transform: scale(0.98);
+        }
+        .flash-messages {
+            width: 100%;
+            padding: 10px;
+            background-color: #ffcccc;
+            color: #cc0000;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 20px; /* Добавяме отстояние отгоре, за да е по-ниско */
+        }
+
+        /* Медийна заявка за мобилни устройства */
+        @media (max-width: 768px) {
+            .back-button {
+                padding: 8px 16px; /* По-малки размери на бутона */
+                font-size: 1em;
+                right: 15px; /* Намалено отстояние от десния ръб */
+                bottom: 15px; /* Намалено отстояние от долния ръб */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .back-button {
+                padding: 6px 12px; /* Още по-малки размери за по-малки екрани */
+                font-size: 0.9em;
+                right: 10px; /* Допълнително намаляване на отстоянията */
+                bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="container">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            <p>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            <form id="match-form" method="POST" action="/addMatches">
+                <div class="match-info">
+                    <h2>Add Match</h2>
+                    
+                        <label for="home_team">Home Team:</label>
+                        <select id="home_team" name="home_team" required>
+                            <option value="Juventus">Juventus</option>
+                        </select>
+
+                        <label for="away_team">Away Team:</label>
+                        <select id="away_team" name="away_team" required>
+                            <option value="Antonio's">Antonio's</option>
+                            <option value="CSKA's">CSKA's</option>
+                            <option value="Mirko's">Mirko's</option>
+                            <option value="Turkey Team">Turkey Team</option>
+                            <option value="Other">Other</option>
+                        </select>
+
+                        <label for="home_team_result">Home Team Result:</label>
+                        <input type="number" id="home_team_result" name="home_team_result" min="0" class="short" required>
+
+                        <label for="away_team_result">Away Team Result:</label>
+                        <input type="number" id="away_team_result" name="away_team_result" min="0" class="short" required>
+
+                        <label for="date">Date:</label>
+                        <input type="datetime-local" id="date" name="date" required>
+
+                        <label for="location">Location:</label>
+                        <select id="location" name="location" required>
+                            <option value="Champion">Champion</option>
+                            <option value="Arena West">Arena West</option>
+                            <option value="Mir & Drujba">Mir & Drujba</option>
+                            <option value="Other">Other</option>
+                        </select>               
+                </div>
+                <div class="user-stats">
+                    <!-- Статистики на играчи ще бъдат добавени тук от JavaScript -->
+                </div>
+                <br>
+                <div class="button-container">
+                    <button type="submit" id="add-match-button" class="styled-button">Add Match and Save Stats</button>
+                </div>
+                <button class="back-button" onclick="window.location.href='{{ url_for('home') }}'">Back to Home</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var container = document.querySelector('.user-stats');
+    
+            // Извличаме потребителите
+            fetch('/getUsers')
+                .then(response => response.json())
+                .then(users => {
+                    users.forEach(user => {
+                        var userSection = document.createElement('div');
+                        userSection.classList.add('user-section');
+    
+                        userSection.innerHTML = `
+                            <h3>${user.last_name}</h3>
+                            <label for="goals_${user.id}">Goals:</label>
+                            <input type="number" id="goals_${user.id}" name="goals_${user.id}" class="stats-field" value="0" min="0">
+    
+                            <label for="shots_${user.id}">Shots:</label>
+                            <input type="number" id="shots_${user.id}" name="shots_${user.id}" class="stats-field" value="0" min="0">
+    
+                            <label for="shots_on_target_${user.id}">Shots on Target:</label>
+                            <input type="number" id="shots_on_target_${user.id}" name="shots_on_target_${user.id}" class="stats-field" value="0" min="0">
+    
+                            <label for="passes_${user.id}">Passes:</label>
+                            <input type="number" id="passes_${user.id}" name="passes_${user.id}" class="stats-field" value="0" min="0">
+    
+                            <label for="fouls_${user.id}">Fouls:</label>
+                            <input type="number" id="fouls_${user.id}" name="fouls_${user.id}" class="stats-field" value="0" min="0">
+    
+                            <label for="yellow_cards_${user.id}">Yellow Cards:</label>
+                            <input type="number" id="yellow_cards_${user.id}" name="yellow_cards_${user.id}" class="stats-field" value="0" min="0" max="2">
+    
+                            <label for="red_cards_${user.id}">Red Cards:</label>
+                            <input type="number" id="red_cards_${user.id}" name="red_cards_${user.id}" class="stats-field" value="0" min="0" max="1">
+                        `;
+    
+                        container.appendChild(userSection);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching users:', error);
+                    alert('Error occurred while fetching users.');
+                });
+        });
+    </script>
+    
+</body>
+</html>

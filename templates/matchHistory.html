@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <link rel="icon" href="/static/icons/ic1.png" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Matches</title>
+    <style>
+        .background {
+            background-image: url('/static/images/bg25.jpg'); /* Път към вашето изображение */
+            background-size: cover; /* Покрива целия контейнер */
+            background-position: center; /* Центрира изображението */
+            background-repeat: no-repeat; /* Не повтаря изображението */
+            min-height: 100vh; /* Минимална височина на контейнера */
+            padding: 20px; /* Добавете вътрешни отстояния, ако е необходимо */
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {    
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table th, table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        table th {
+            background-color: #f2f2f2;
+        }
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+        }
+        .sort-button {
+            background-color: #2898a7;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .sort-button:hover {
+            background-color: #227c8b;
+        }
+        .back-button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            border-radius: 4px;
+            cursor: pointer;
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+        }
+        .back-button:hover {
+            background-color: #218838;
+        }
+
+        /* Медийни заявки за адаптивен дизайн */
+        @media (max-width: 768px) {
+            .container {
+                width: 90%; /* Ширината на контейнера се адаптира */
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5em; /* Намалява шрифта за заглавието */
+            }
+            table th, table td {
+                padding: 8px; /* Намалява отстоянието в клетките */
+                font-size: 0.9em; /* Намалява шрифта в таблицата */
+            }
+            .sort-button {
+                padding: 8px 16px;
+                font-size: 1em; /* Намалява шрифта за бутоните */
+            }
+            .back-button {
+                padding: 8px 16px;
+                font-size: 1em; /* Намалява шрифта за бутона "Back to Home" */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: 100%; /* Ширината на контейнера за много малки екрани */
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.2em; /* Още по-малък шрифт за заглавието */
+            }
+            table th, table td {
+                padding: 5px; /* Още по-малки отстояния в клетките */
+                font-size: 0.8em; /* Още по-малък шрифт в таблицата */
+            }
+            .sort-button {
+                padding: 6px 12px;
+                font-size: 0.9em; /* Още по-малък шрифт за бутоните */
+            }
+            .back-button {
+                padding: 6px 12px;
+                font-size: 0.9em; /* Още по-малък шрифт за бутона "Back to Home" */
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="background">
+        <div class="container">
+            <h1>All Matches</h1>
+            <button class="sort-button" id="sort-data-button">Sorted By Date</button>
+            <button class="sort-button" id="sort-goal-diff-button">Sorted by Goal Difference</button>
+            <button class="back-button" onclick="window.location.href='{{ url_for('home') }}'">Back to Home</button>
+            <table id="matches-table">
+                <thead>
+                    <tr>
+                        <th>Home Team</th>
+                        <th>Away Team</th>
+                        <th>Home Team Result</th>
+                        <th>Away Team Result</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let matches = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/getMatches') // Променете на правилния endpoint за получаване на мачове
+                .then(response => response.json())
+                .then(data => {
+                    matches = data; // Запазваме мачовете в глобалната променлива
+
+                    // Първоначално извеждаме мачовете
+                    displayMatches(matches);
+                })
+                .catch(error => console.error('Error fetching matches:', error));
+
+            // Event listener за сортиране по дата
+            document.getElementById('sort-data-button').addEventListener('click', function() {
+                sortByDate();
+            });
+
+            // Event listener за сортиране по голова разлика
+            document.getElementById('sort-goal-diff-button').addEventListener('click', function() {
+                sortByGoalDifference();
+            });
+        });
+
+        function displayMatches(matches) {
+            const tableBody = document.querySelector('#matches-table tbody');
+            tableBody.innerHTML = ''; // Изчистваме съдържанието на таблицата
+
+            matches.forEach(match => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${match.home_team}</td>
+                    <td>${match.away_team}</td>
+                    <td>${match.home_team_result}</td>
+                    <td>${match.away_team_result}</td>
+                    <td>${new Date(match.date).toLocaleString()}</td>
+                `;
+
+                // Оцветяване на реда според резултата
+                if (match.home_team_result > match.away_team_result) {
+                    row.style.backgroundColor = 'lightgreen';  // Зелен, ако home team печели
+                } else if (match.home_team_result < match.away_team_result) {
+                    row.style.backgroundColor = 'lightcoral';  // Червен, ако away team печели
+                } else {
+                    row.style.backgroundColor = 'lightyellow';  // Жълт, ако резултатът е равен
+                }
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        function sortByDate() {
+            // Сортираме мачовете по дата във възходящ ред
+            matches.sort((b, a) => new Date(a.date) - new Date(b.date));
+
+            // Извеждаме сортираните мачове
+            displayMatches(matches);
+        }
+
+        function sortByGoalDifference() {
+            // Сортираме мачовете по голова разлика във възходящ ред
+            matches.sort((b, a) => {
+                const diffA = Math.abs(a.home_team_result - a.away_team_result);
+                const diffB = Math.abs(b.home_team_result - b.away_team_result);
+                return diffA - diffB;
+            });
+
+            // Извеждаме сортираните мачове
+            displayMatches(matches);
+        }
+    </script>
+    
+</body>
+</html>

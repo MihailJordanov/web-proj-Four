@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="/static/icons/ic1.png" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <style>
+        .background {
+            background-image: url('{{ url_for("static", filename=outline_image) }}'); /* Път към вашето изображение */
+            background-size: cover; /* Покрива целия контейнер */
+            background-position: center; /* Центрира изображението */
+            background-repeat: no-repeat; /* Не повтаря изображението */
+            min-height: 100vh; /* Минимална височина на контейнера */
+            padding: 20px; /* Добавете вътрешни отстояния, ако е необходимо */
+            background-size: cover;
+            z-index: -1; /* Поставя фона зад съдържанието */
+        }
+        .profile-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 80%;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #cccccc00;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0); /* леко прозрачен фон */
+        }
+
+        .profile-info {
+            flex: 1;
+            text-align: left; /* Центрира текста в контейнера */
+            position: relative; /* Необходимо за позициониране на псевдоелементи */
+        }
+
+        .profile-info h1 {
+            margin: 0;
+            font-size: 36px; /* Увеличен размер на името */
+            position: relative;
+            padding: 10px;
+            background-image: url('/static/images/bg37.avif'); /* Изображение на очертанието */
+            background-size: cover; /* Покрива целия контейнер */
+            border-radius: 10px; /* Завършване на ъглите на очертанията */
+            color: white; /* Цвят на текста */
+            background-clip: padding-box; /* Показва изображението само в padding */
+        }
+
+        .profile-info .number {
+            font-size: 140px; /* Увеличен размер на номера */
+            font-weight: bold;
+            margin-top: 10px;
+            position: relative;
+            padding: 10px;
+            background-image: url('/static/images/bg37.avif'); /* Изображение на очертанието */
+            background-size: cover; /* Покрива целия контейнер */
+            border-radius: 10px; /* Завършване на ъглите на очертанията */
+            color: white; /* Цвят на текста */
+            background-clip: padding-box; /* Показва изображението само в padding */
+        }
+
+        .profile-image {
+            margin-left: 20px;
+        }
+
+        .profile-image img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+        }
+        .back-button {
+            background-color: #28a746b6;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            border-radius: 4px;
+            cursor: pointer;
+            position: fixed; /* Фиксира бутона на място */
+            right: 20px; /* Отстояние от десния ръб */
+            bottom: 20px; /* Отстояние от долния ръб */
+            transition: all 0.3s ease; /* Анимация за плавно смаляване */
+        }
+        .back-button:hover {
+            background-color: #218838;
+        }
+
+        @media (max-width: 768px) {
+            .back-button {
+                padding: 8px 16px; /* По-малки размери на бутона */
+                font-size: 1em;
+                right: 15px; /* Намалено отстояние от десния ръб */
+                bottom: 15px; /* Намалено отстояние от долния ръб */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .back-button {
+                padding: 6px 12px; /* Още по-малки размери за по-малки екрани */
+                font-size: 0.9em;
+                right: 10px; /* Допълнително намаляване на отстоянията */
+                bottom: 10px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+<div class="background">
+    <div class="profile-container">
+        <div class="profile-info">
+            <h1>{{ user.first_name }} {{ user.last_name }}</h1>
+            <div class="number">{{ user.number }}</div>
+        </div>
+        <div class="profile-image">
+            <img src="{{ url_for('static', filename=profile_image) }}" alt="Profile Image">
+        </div>
+        <button class="back-button" onclick="window.location.href='{{ url_for('home') }}'">Back to Home</button>
+    </div>
+</div>
+
+</body>
+</html>
