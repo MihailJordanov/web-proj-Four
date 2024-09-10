@@ -11,8 +11,8 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'juvjuvjuv'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://misho:1234@localhost/football_stats') #'postgresql://misho:1234@localhost/football_stats' 
-
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+#app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://misho:1234@localhost/football_stats') #'postgresql://misho:1234@localhost/football_stats' 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
