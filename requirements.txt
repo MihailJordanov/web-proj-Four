@@ -19,6 +19,5 @@ psycopg2-binary==2.9.9
 pygame==2.5.2
 SQLAlchemy==2.0.32
 typing_extensions==4.12.2
-vboxapi==1.0
 virtualenv==20.26.3
 Werkzeug==3.0.4
