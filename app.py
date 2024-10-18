@@ -5,13 +5,14 @@ from models import db, Match, User, UserMatch
 from flask_migrate import Migrate
 from datetime import datetime
 import re
-from sqlalchemy import func
+from sqlalchemy import func, extract
 import os
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'juvjuvjuv'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://misho:1234@localhost/football_stats' 
+#app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 #app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://misho:1234@localhost/football_stats') #'postgresql://misho:1234@localhost/football_stats' 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -54,6 +55,38 @@ class UserMatch(db.Model):
     fouls = db.Column(db.Integer)
     yellow_cards = db.Column(db.Integer)
     red_cards = db.Column(db.Integer)
+
+
+@app.route('/getYears')
+def get_years():
+    years = db.session.query(func.extract('year', Match.date)).distinct().order_by(func.extract('year', Match.date)).all()
+    # Преобразуваме резултата в обикновен списък от години
+    year_list = [int(year[0]) for year in years]
+    return jsonify(year_list)
+
+
+@app.route('/getPlayTimeData')
+def get_play_time_data():
+    year = request.args.get('year', type=int)
+
+    # Извличаме броя на мачовете по месеци за избраната година
+    matches_by_month = db.session.query(
+        extract('month', Match.date).label('month'),
+        func.count(Match.id).label('count')
+    ).filter(extract('year', Match.date) == year) \
+     .group_by('month').order_by('month').all()
+
+    # Преобразуваме данните в JSON формат
+    data = [{'month': m[0], 'count': m[1]} for m in matches_by_month]
+
+    return jsonify(data)
+
+
+@app.route('/playtime')
+def playtime():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('playtime.html')
 
 
 
@@ -348,14 +381,6 @@ def get_matches():
         }
         matches_list.append(match_data)
     return jsonify(matches_list)
-
-#===============================================
-@app.route('/test', methods=['GET', 'POST'])
-def test():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    return render_template('test.html')
-#===============================================
 
 
 @app.route('/matchHistory', methods=['GET', 'POST'])

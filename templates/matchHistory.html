@@ -176,6 +176,8 @@
             const tableBody = document.querySelector('#matches-table tbody');
             tableBody.innerHTML = ''; // Изчистваме съдържанието на таблицата
 
+            matches.reverse();   
+            
             matches.forEach(match => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -183,7 +185,7 @@
                     <td>${match.away_team}</td>
                     <td>${match.home_team_result}</td>
                     <td>${match.away_team_result}</td>
-                    <td>${new Date(match.date).toLocaleString()}</td>
+                    <td>${new Date(match.date).toLocaleDateString('en-GB')}</td>
                 `;
 
                 // Оцветяване на реда според резултата
@@ -201,7 +203,7 @@
 
         function sortByDate() {
             // Сортираме мачовете по дата във възходящ ред
-            matches.sort((b, a) => new Date(a.date) - new Date(b.date));
+            matches.sort((a, b) => new Date(a.date) - new Date(b.date));
 
             // Извеждаме сортираните мачове
             displayMatches(matches);
@@ -209,7 +211,7 @@
 
         function sortByGoalDifference() {
             // Сортираме мачовете по голова разлика във възходящ ред
-            matches.sort((b, a) => {
+            matches.sort((a, b) => {
                 const diffA = Math.abs(a.home_team_result - a.away_team_result);
                 const diffB = Math.abs(b.home_team_result - b.away_team_result);
                 return diffA - diffB;

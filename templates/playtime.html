@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="/static/icons/ic1.png" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Time Statistics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      /* Основни стилове */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }   
+
+        .background {
+            background-size: cover; /* Покрива целия контейнер */
+            background-position: center; /* Центрира изображението */
+            background-repeat: no-repeat; /* Не повтаря изображението */
+            height: 100vh; /* Минимална височина на контейнера */
+            width: 100%; /* За да покрива целия екран */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative; /* За да можем да позиционираме панела върху него */
+            transition: opacity 1s ease-in-out; /* Добавяне на преход за прозрачност */
+            opacity: 0; /* Скриваме фона по подразбиране */
+        }
+
+
+
+        /* Стилове за контейнера на панела */
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            position: relative; /* Заделя панела за по-добро позициониране */
+        }
+
+        /* Стилове за заглавието */
+        h1 {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Панел за диаграмата */
+        .chart-panel {
+            background-color: #e0f7fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Dropdown стилове */
+        select {
+            padding: 10px;
+            font-size: 1.1em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Стилове за бутона "Back to Home" */
+        .back-button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            border-radius: 4px;
+            cursor: pointer;
+            position: fixed; /* Позиционираме го фиксировано */
+            right: 20px;
+            bottom: 20px;
+            z-index: 1000; /* За да бъде над другите елементи */
+        }
+
+        .back-button:hover {
+            background-color: #218838;
+        }
+
+        /* Адаптивни стилове */
+        @media (max-width: 768px) {
+            .container {
+                width: 90%; /* Ширината на контейнера се адаптира */
+                padding: 15px;
+            }
+            .back-button {
+                padding: 8px 16px;
+                font-size: 1em; /* Намалява шрифта за бутона "Back to Home" */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: 100%; /* Ширината на контейнера за много малки екрани */
+                padding: 10px;
+            }
+            .back-button {
+                padding: 6px 12px;
+                font-size: 0.9em; /* Още по-малък шрифт за бутона "Back to Home" */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="container">
+            <h1>Play Time Statistics</h1>
+            
+            <!-- Dropdown за избор на година -->
+            <label for="yearSelector">Select Year:</label>
+            <select id="yearSelector"></select>
+
+            <!-- Панел за диаграмата -->
+            <div class="chart-panel">
+                <canvas id="playTimeChart"></canvas>
+            </div>
+            <button class="back-button" onclick="window.location.href='{{ url_for('home') }}'">Back to Home</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const images = [
+                '/static/images/bg38.avif',
+                '/static/images/bg41.avif',
+                '/static/images/bg43.jpg'
+            ];
+
+            let currentIndex = 0;
+            const background = document.querySelector('.background');
+
+            function changeBackground() {
+                // Добавяме новото изображение в задния план, без да променяме текущото
+                const newImage = new Image();
+                newImage.src = images[currentIndex];
+                newImage.onload = () => {
+                    // Променяме фоновото изображение след зареждането на новото изображение
+                    background.style.backgroundImage = `url(${images[currentIndex]})`;
+                    background.style.opacity = 1; // Правим видим
+                };
+
+                // Стартираме fade-out анимация на старото изображение
+                background.style.opacity = 0;
+
+                currentIndex = (currentIndex + 1) % images.length;
+            }
+
+            setInterval(changeBackground, 5000); // Смяна на фона на всеки 5 секунди
+
+            // Инициална настройка на фона
+            changeBackground();
+
+            // Останалата част от кода
+
+
+
+            const yearSelector = document.getElementById('yearSelector');
+            const currentYear = new Date().getFullYear();  // Вземаме текущата година
+            let playTimeChart;  // Ще запазим референция към диаграмата
+
+            // Зареждаме списъка с години
+            fetch('/getYears')
+                .then(response => response.json())
+                .then(years => {
+                    years.forEach(year => {
+                        const option = document.createElement('option');
+                        option.value = year;
+                        option.text = year;
+                        yearSelector.appendChild(option);
+                    });
+
+                    // Селектираме текущата година по подразбиране
+                    if (years.includes(currentYear)) {
+                        yearSelector.value = currentYear;
+                        loadChartData(currentYear);  // Зареждаме данните за текущата година
+                    } else if (years.length > 0) {
+                        loadChartData(years[0]);  // Ако текущата година я няма, зареждаме първата налична
+                    }
+                })
+                .catch(error => console.error('Error fetching years:', error));
+
+            // Зареждаме данните за избраната година
+            yearSelector.addEventListener('change', function() {
+                loadChartData(this.value);
+            });
+
+            function loadChartData(year) {
+                fetch(`/getPlayTimeData?year=${year}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const allMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                        const matchCounts = new Array(12).fill(0);
+                        let totalMatches = 0;
+                        
+                        data.forEach(entry => {
+                            matchCounts[entry.month - 1] = entry.count;
+                            totalMatches += entry.count;  // Сумираме броя на мачовете
+                        });
+
+                        if (playTimeChart) {
+                            // Актуализираме съществуващата диаграма
+                            playTimeChart.data.datasets[0].data = matchCounts;
+                            playTimeChart.data.datasets[0].label = `Matches Played in ${year} - Total: ${totalMatches}`;
+                            playTimeChart.update();  // Актуализираме диаграмата
+                        } else {
+                            // Създаваме нова диаграма
+                            const ctx = document.getElementById('playTimeChart').getContext('2d');
+                            playTimeChart = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: allMonths,
+                                    datasets: [{
+                                        label: `Matches Played in ${year} - Total: ${totalMatches}`,
+                                        data: matchCounts,
+                                        fill: false,
+                                        borderColor: 'rgba(75, 192, 192, 1)',
+                                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                        tension: 0.1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: {
+                                                precision: 0
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    })
+                    .catch(error => console.error('Error fetching play time data:', error));
+            }
+        });
+    </script>
+</body>
+</html>
